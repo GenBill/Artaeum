@@ -1,5 +1,5 @@
 import tensorflow as tf
-
+import numpy as np
 from tensorflow.keras.layers import Dense, Flatten, Conv2D
 from tensorflow.keras import Model
 
@@ -7,6 +7,10 @@ mnist = tf.keras.datasets.mnist
 
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 x_train, x_test = x_train / 255.0, x_test / 255.0
+
+y_train = tf.one_hot(y_train,10)
+y_test = tf.one_hot(y_test,10)
+
 
 # Add a channels dimension
 x_train = x_train[..., tf.newaxis]
@@ -46,20 +50,24 @@ test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 def train_step(images, labels):
   with tf.GradientTape() as tape:
     predictions = model(images)
-    loss = loss_object(labels, predictions)
+    # loss = loss_object(labels, predictions)
+    loss = (predictions - labels)**2
+    # loss = tf.reduce_sum(loss0)
   gradients = tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
   train_loss(loss)
-  train_accuracy(labels, predictions)
+  train_accuracy(tf.argmax(labels, axis=1), predictions)
 
 @tf.function
 def test_step(images, labels):
   predictions = model(images)
-  t_loss = loss_object(labels, predictions)
+  # t_loss = loss_object(labels, predictions)
+  t_loss = (predictions - labels)**2
+  # t_loss = tf.reduce_sum(t_loss0)
 
   test_loss(t_loss)
-  test_accuracy(labels, predictions)
+  test_accuracy(tf.argmax(labels, axis=1), predictions)
 
 EPOCHS = 5
 
