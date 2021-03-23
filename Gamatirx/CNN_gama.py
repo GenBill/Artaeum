@@ -8,6 +8,9 @@ mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 x_train, x_test = x_train / 255.0, x_test / 255.0
 
+y_train = tf.one_hot(y_train,10)
+y_test = tf.one_hot(y_test,10)
+
 # Add a channels dimension
 x_train = x_train[..., tf.newaxis]
 x_test = x_test[..., tf.newaxis]
@@ -60,16 +63,17 @@ def train_step(images, labels):
     Ma_b = 0
     Ma_c = -2
     Ma_d = -1
-    loss_E2 = tf.square(labels-predictions[:,0:9])
+    loss_E2 = (labels-predictions[:,0:9])**2
     loss_Ac = 1/(1+loss_E2)
     loss_Se = predictions[:,10]
+    
     loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
 
   gradients = tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
   train_loss(loss)
-  train_accuracy(labels, predictions[:,0:9])
+  train_accuracy(tf.argmax(labels, axis=1), predictions[:,0:9])
 
 @tf.function
 def test_step(images, labels):
@@ -78,14 +82,14 @@ def test_step(images, labels):
   Ma_b = 0
   Ma_c = -2
   Ma_d = -1
-  loss_E2 = tf.square(labels-predictions[:,0:9])
+  loss_E2 = (labels-predictions[:,[0:9]])**2
   loss_Ac = 1/(1+loss_E2)
   loss_Se = predictions[:,10]
   t_loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
   # t_loss = loss_object(labels, predictions)
 
   test_loss(t_loss)
-  test_accuracy(labels, predictions[:,0:9])
+  test_accuracy(tf.argmax(labels, axis=1), predictions[:,0:9])
 
 EPOCHS = 5
 
