@@ -60,6 +60,7 @@ train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy
 
 test_loss = tf.keras.metrics.Mean(name='test_loss')
 test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
+test_Nope = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
 @tf.function
 def train_step(images, labels):
@@ -88,6 +89,8 @@ def test_step(images, labels):
 
   test_loss(t_loss)
   test_accuracy(tf.argmax(labels, axis=1), predictions[:,0:10])
+  # test_Nope(tf.argmax(labels, axis=1)!=tf.argmax(predictions[:,0:10], axis=1)&predictions[:,10]>0.5)
+  test_Nope(tf.argmax(labels, axis=1), predictions[:,0:10])
 
 EPOCHS = 5
 
@@ -104,15 +107,16 @@ for epoch in range(EPOCHS):
   for test_images, test_labels in test_ds:
     test_step(test_images, test_labels)
 
-  template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}'
+  template = 'Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}, Test Nope: {}'
   print (template.format(epoch+1,
                          train_loss.result(),
                          train_accuracy.result()*100,
                          test_loss.result(),
-                         test_accuracy.result()*100))
+                         test_accuracy.result()*100,
+                         test_Nope.result()*10000))
 
 
 # Final Test - 输出每次判断的置信度 & 判断准确率的关系
-# 2021.03.24 - 15:36
+# 2021.03.24 - 15:49
 # 快写！
 
