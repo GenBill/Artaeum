@@ -1,4 +1,4 @@
-# 阿塔尤姆 - Artaeum
+# Artaeum
 GenBill的私密代码库
-# 连通指令: 
+# Teleportation
 git clone https://GenBill@github.com/GenBill/Artaeum.git
