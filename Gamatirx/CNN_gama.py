@@ -8,8 +8,8 @@ mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 x_train, x_test = x_train / 255.0, x_test / 255.0
 
-y_train = tf.one_hot(y_train,10)
-y_test = tf.one_hot(y_test,10)
+y_train = tf.one_hot(y_train, depth=10)
+y_test = tf.one_hot(y_test, depth=10)
 
 # Add a channels dimension
 x_train = x_train[..., tf.newaxis]
@@ -25,13 +25,20 @@ class MyModel(Model):
     self.conv1 = Conv2D(32, 3, activation='relu')
     self.flatten = Flatten()
     self.d1 = Dense(128, activation='relu')
-    self.d2 = Dense(10, activation='softmax')
+    # self.d2 = Dense(10, activation='softmax')
+    self.d2 = Dense(11, activation='softmax')
+    # 警告：这里需要重定义softmax
 
   def call(self, x):
     x = self.conv1(x)
-    x = self.flatten(x)
+    x = self.flatten(x) 
     x = self.d1(x)
     return self.d2(x)
+  
+  # def my_active(x):
+    # return pow(x, 2)
+  # def my_active_grad(x):
+    # return 2 * x
 
 model = MyModel()
 
@@ -58,38 +65,29 @@ test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 def train_step(images, labels):
   with tf.GradientTape() as tape:
     predictions = model(images)
-    # loss = loss_object(labels, predictions)
-    Ma_a = 1
-    Ma_b = 0
-    Ma_c = -2
-    Ma_d = -1
-    loss_E2 = (labels-predictions[:,0:9])**2
+    loss_E2 = tf.reduce_mean((labels-predictions[:,0:10])**2)
     loss_Ac = 1/(1+loss_E2)
-    loss_Se = predictions[:,10]
-    
-    loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
+    loss_Se = predictions[10]
+    # loss = loss_object(labels, predictions)
+    loss = -(loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d)
 
   gradients = tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
   train_loss(loss)
-  train_accuracy(tf.argmax(labels, axis=1), predictions[:,0:9])
+  train_accuracy(tf.argmax(labels, axis=1), predictions[:,0:10])
 
 @tf.function
 def test_step(images, labels):
   predictions = model(images)
-  Ma_a = 1
-  Ma_b = 0
-  Ma_c = -2
-  Ma_d = -1
-  loss_E2 = (labels-predictions[:,[0:9]])**2
+  loss_E2 = tf.reduce_mean((labels-predictions[:,0:10])**2)
   loss_Ac = 1/(1+loss_E2)
-  loss_Se = predictions[:,10]
+  loss_Se = predictions[10]
   t_loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
   # t_loss = loss_object(labels, predictions)
 
   test_loss(t_loss)
-  test_accuracy(tf.argmax(labels, axis=1), predictions[:,0:9])
+  test_accuracy(tf.argmax(labels, axis=1), predictions[:,0:10])
 
 EPOCHS = 5
 
@@ -112,3 +110,9 @@ for epoch in range(EPOCHS):
                          train_accuracy.result()*100,
                          test_loss.result(),
                          test_accuracy.result()*100))
+
+
+# Final Test - 输出每次判断的置信度 & 判断准确率的关系
+# 2021.03.24 - 15:36
+# 快写！
+
