@@ -43,10 +43,10 @@ class MyModel(Model):
 model = MyModel()
 
 # loss_Matrix
-Ma_a = 1
-Ma_b = 0
-Ma_c = -2
-Ma_d = -1
+Ma_a = 40
+Ma_b = -40
+Ma_c = -100
+Ma_d = -80
 # loss_object
 # loss_E2 = tf.square(tf.sub(labels, predictions[:,0:9]))
 # loss_Ac = tf.div(1,tf.add(1,loss_E2))
@@ -67,7 +67,8 @@ def train_step(images, labels):
   with tf.GradientTape() as tape:
     predictions = model(images)
     loss_E2 = tf.reduce_mean((labels-predictions[:,0:10])**2)
-    loss_Ac = 1/(1+loss_E2)
+    # loss_Ac = 1/(1+loss_E2)
+    loss_Ac = 1-loss_E2**2
     loss_Se = predictions[10]
     # loss = loss_object(labels, predictions)
     loss = -(loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d)
@@ -82,7 +83,8 @@ def train_step(images, labels):
 def test_step(images, labels):
   predictions = model(images)
   loss_E2 = tf.reduce_mean((labels-predictions[:,0:10])**2)
-  loss_Ac = 1/(1+loss_E2)
+  # loss_Ac = 1/(1+loss_E2)
+  loss_Ac = 1-loss_E2**2
   loss_Se = predictions[10]
   t_loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
   # t_loss = loss_object(labels, predictions)
@@ -115,8 +117,16 @@ for epoch in range(EPOCHS):
                          test_accuracy.result()*100,
                          test_Nope.result()*10000))
 
-
 # Final Test - 输出每次判断的置信度 & 判断准确率的关系
 # 2021.03.24 - 15:49
 # 快写！
 
+for i in range(1):
+  # 好怪，model只接受batch为单位的测试
+  this_temp = model(x_test[i:i+32,:,:,:])
+  this_pred = this_temp[:,0:10]
+  this_trst = this_temp[:,10]
+  print(this_temp[:,0:10])
+  print(this_temp[:,10])
+
+print('End Sub')
