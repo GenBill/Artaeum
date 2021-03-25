@@ -1,6 +1,6 @@
 # Artaeum
 GenBill的私密代码库  
-Halo: Topological Data Analysis  
+Halo: Contour Topological Data Analysis  
 Maple: Drone to Satellite Map Matching Maple  
 Gamatrix: Game Theory Incentive Structure Uncertainty  
 
