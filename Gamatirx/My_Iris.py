@@ -43,7 +43,7 @@ lrr = 0.25
 lr = 0.0001    # 学习率为0.1
 train_loss_results = []  # 将每轮的loss记录在此列表中，为后续画loss曲线提供数据
 test_acc = []  # 将每轮的acc记录在此列表中，为后续画acc曲线提供数据
-epoch = 3000  # 循环500轮
+epoch = 2000  # 循环500轮
 loss_all = 0  # 每轮分4个step，loss_all记录四个step生成的4个loss的和
 
 
