@@ -39,31 +39,32 @@ test_db = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 w1 = tf.Variable(tf.random.truncated_normal([4, 4], stddev=0.1, seed=1))
 b1 = tf.Variable(tf.random.truncated_normal([4], stddev=0.1, seed=1))
 
-lrr = 0.5
-lr = 0.01    # 学习率为0.1
+lrr = 0.25
+lr = 0.0001    # 学习率为0.1
 train_loss_results = []  # 将每轮的loss记录在此列表中，为后续画loss曲线提供数据
 test_acc = []  # 将每轮的acc记录在此列表中，为后续画acc曲线提供数据
-epoch = 1000  # 循环500轮
+epoch = 3000  # 循环500轮
 loss_all = 0  # 每轮分4个step，loss_all记录四个step生成的4个loss的和
 
 
 Ma_a = 10
-Ma_b = 10 # 1
-Ma_c = -10 # -2
-Ma_d = -10
+Ma_b = 5
+Ma_c = -100
+Ma_d = -80
 
 # 先训练好前半部分识别网络再Finetune置信度网络？
 
 # 训练部分
 for epoch in range(epoch):  #数据集级别的循环，每个epoch循环一次数据集
-    # lr = lrr**(epoch/10)
+    # lr = max(min(0.1,lrr**(epoch/100)),0.001)
     for step, (x_train, y_train) in enumerate(train_db):  #batch级别的循环 ，每个step循环一个batch
         with tf.GradientTape() as tape:  # with结构记录梯度信息
             y = tf.matmul(x_train, w1) + b1  # 神经网络乘加运算
             y = tf.nn.softmax(y)  # 使输出y符合概率分布（此操作后与独热码同量级，可相减求loss）
             y_ = tf.one_hot(y_train, depth=4)  # 将标签值转换为独热码格式，方便计算loss和accuracy
             loss_E2 = tf.square(y_[:,0:3] - y[:,0:3])  # 采用均方误差损失函数mse = mean(sum(y-out)^2)
-            loss_Ac = 1/(1+loss_E2)
+            # loss_Ac = 1/(1+loss_E2)
+            loss_Ac = 1-loss_E2
             loss_Se = y[:,3]
             # loss_Main = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
                         # loss_Main = Ma_d + (Ma_b - Ma_d)*loss_Ac + (Ma_c - Ma_d)*loss_Se + (Ma_a - Ma_b - Ma_c + Ma_d)*loss_Ac*loss_Se
