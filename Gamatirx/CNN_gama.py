@@ -64,6 +64,8 @@ test_loss = tf.keras.metrics.Mean(name='test_loss')
 test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 test_Nope = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
+# 需要降低 predictions[:,10] 的学习率（即置信度估计的学习率）
+# 目前loss无法下降的原因猜测是添加了置信度后出现局部极小值点
 @tf.function
 def train_step(images, labels):
   with tf.GradientTape() as tape:
