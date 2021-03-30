@@ -28,7 +28,7 @@ class MyModel(Model):
     self.flatten = Flatten()
     self.d1 = Dense(128, activation='relu')
     # self.d2 = Dense(10, activation='softmax')
-    self.d2 = Dense(11, activation='softmax')
+    self.d2 = Dense(11, activation='sigmoid')
     # 警告：这里需要重定义softmax
 
   def call(self, x):
@@ -80,7 +80,7 @@ def train_step(images, labels):
     # loss = -(loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d)
     loss_Main = Ma_d + tf.reduce_sum((Ma_b-Ma_d)*loss_Ac,axis=1) + (Ma_c-Ma_d)*loss_Se + (Ma_a-Ma_b-Ma_c+Ma_d)*tf.reduce_sum(loss_Ac,axis=1)*loss_Se
     # loss_Main = tf.matmul(loss_Ac,loss_Se)*Ma_a + tf.matmul(loss_Ac,loss_Seinv)*Ma_b + tf.matmul(loss_Acinv,loss_Se)*Ma_c + tf.matmul(loss_Acinv,loss_Seinv)*Ma_d
-    loss = -tf.reduce_mean(loss_Main) + (10*(labels-predictions[:,0:10]))**4
+    loss = -tf.reduce_mean(loss_Main) # + (10*(labels-predictions[:,0:10]))**2
 
   gradients = 10*tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -98,7 +98,7 @@ def test_step(images, labels):
   loss_Se = predictions[:,10]
   loss_Main = Ma_d + tf.reduce_sum((Ma_b-Ma_d)*loss_Ac,axis=1) + (Ma_c-Ma_d)*loss_Se + (Ma_a-Ma_b-Ma_c+Ma_d)*tf.reduce_sum(loss_Ac,axis=1)*loss_Se
   # loss_Main = tf.matmul(loss_Ac,loss_Se)*Ma_a + tf.matmul(loss_Ac,loss_Seinv)*Ma_b + tf.matmul(loss_Acinv,loss_Se)*Ma_c + tf.matmul(loss_Acinv,loss_Seinv)*Ma_d
-  t_loss = -tf.reduce_mean(loss_Main) + (10*(labels-predictions[:,0:10]))**2
+  t_loss = -tf.reduce_mean(loss_Main) # + (10*(labels-predictions[:,0:10]))**2
   # t_loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
   # t_loss = loss_object(labels, predictions)
 
@@ -107,7 +107,7 @@ def test_step(images, labels):
   # test_Nope(tf.argmax(labels, axis=1)!=tf.argmax(predictions[:,0:10], axis=1)&predictions[:,10]>0.5)
   test_Nope(tf.argmax(labels, axis=1), predictions[:,0:10])
 
-EPOCHS = 20
+EPOCHS = 10
 
 for epoch in range(EPOCHS):
   # 在下一个epoch开始时，重置评估指标
