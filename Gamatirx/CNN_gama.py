@@ -45,10 +45,10 @@ class MyModel(Model):
 model = MyModel()
 
 # loss_Matrix
-Ma_a = 10
-Ma_b = 5
-Ma_c = -10
-Ma_d = -5
+Ma_a = 1.2
+Ma_b = 0.8
+Ma_c = -1.0
+Ma_d = -0.5
 # loss_object
 # loss_E2 = tf.square(tf.sub(labels, predictions[:,0:9]))
 # loss_Ac = tf.div(1,tf.add(1,loss_E2))
@@ -73,15 +73,16 @@ def train_step(images, labels):
 
     loss_E2 = (labels-predictions[:,0:10])**2
     # loss_Ac = 1/(1+loss_E2)
-    loss_Ac = 1-loss_E2
+    loss_Ac = tf.math.exp(-loss_E2)
+    # loss_Ac = (1-loss_E2)
     loss_Se = predictions[:,10]
     # loss = loss_object(labels, predictions)
     # loss = -(loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d)
     loss_Main = Ma_d + tf.reduce_sum((Ma_b-Ma_d)*loss_Ac,axis=1) + (Ma_c-Ma_d)*loss_Se + (Ma_a-Ma_b-Ma_c+Ma_d)*tf.reduce_sum(loss_Ac,axis=1)*loss_Se
     # loss_Main = tf.matmul(loss_Ac,loss_Se)*Ma_a + tf.matmul(loss_Ac,loss_Seinv)*Ma_b + tf.matmul(loss_Acinv,loss_Se)*Ma_c + tf.matmul(loss_Acinv,loss_Seinv)*Ma_d
-    loss = -tf.reduce_mean(loss_Main)
+    loss = -tf.reduce_mean(loss_Main) + (10*(labels-predictions[:,0:10]))**2
 
-  gradients = tape.gradient(loss, model.trainable_variables)
+  gradients = 10*tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
   train_loss(loss)
@@ -92,11 +93,12 @@ def test_step(images, labels):
   predictions = model(images)
   loss_E2 = (labels-predictions[:,0:10])**2
   # loss_Ac = 1/(1+loss_E2)
-  loss_Ac = 1-loss_E2
+  loss_Ac = tf.math.exp(-loss_E2)
+  # loss_Ac = (1-loss_E2)
   loss_Se = predictions[:,10]
   loss_Main = Ma_d + tf.reduce_sum((Ma_b-Ma_d)*loss_Ac,axis=1) + (Ma_c-Ma_d)*loss_Se + (Ma_a-Ma_b-Ma_c+Ma_d)*tf.reduce_sum(loss_Ac,axis=1)*loss_Se
   # loss_Main = tf.matmul(loss_Ac,loss_Se)*Ma_a + tf.matmul(loss_Ac,loss_Seinv)*Ma_b + tf.matmul(loss_Acinv,loss_Se)*Ma_c + tf.matmul(loss_Acinv,loss_Seinv)*Ma_d
-  t_loss = -tf.reduce_mean(loss_Main)
+  t_loss = -tf.reduce_mean(loss_Main) + (10*(labels-predictions[:,0:10]))**2
   # t_loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
   # t_loss = loss_object(labels, predictions)
 
@@ -139,5 +141,5 @@ for i in range(1):
   this_trst = this_temp[:,10]
   print(this_temp[:,0:10])
   print(this_temp[:,10])
-
+  print(tf.argmax(y_test[i:i+32,:], axis=1))
 print('End Sub')
