@@ -1,3 +1,5 @@
+import random
+import numpy as np
 import tensorflow as tf
 
 from tensorflow.keras.layers import Dense, Flatten, Conv2D
@@ -43,10 +45,10 @@ class MyModel(Model):
 model = MyModel()
 
 # loss_Matrix
-Ma_a = 40
-Ma_b = -40
-Ma_c = -100
-Ma_d = -80
+Ma_a = 10
+Ma_b = 5
+Ma_c = -10
+Ma_d = -5
 # loss_object
 # loss_E2 = tf.square(tf.sub(labels, predictions[:,0:9]))
 # loss_Ac = tf.div(1,tf.add(1,loss_E2))
@@ -66,12 +68,16 @@ test_Nope = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 def train_step(images, labels):
   with tf.GradientTape() as tape:
     predictions = model(images)
-    loss_E2 = tf.reduce_mean((labels-predictions[:,0:10])**2)
+
+    loss_E2 = (labels-predictions[:,0:10])**2
     # loss_Ac = 1/(1+loss_E2)
-    loss_Ac = 1-loss_E2**2
-    loss_Se = predictions[10]
+    loss_Ac = 1-loss_E2
+    loss_Se = predictions[:,10]
     # loss = loss_object(labels, predictions)
-    loss = -(loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d)
+    # loss = -(loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d)
+    loss_Main = Ma_d + tf.reduce_sum((Ma_b-Ma_d)*loss_Ac,axis=1) + (Ma_c-Ma_d)*loss_Se + (Ma_a-Ma_b-Ma_c+Ma_d)*tf.reduce_sum(loss_Ac,axis=1)*loss_Se
+    # loss_Main = tf.matmul(loss_Ac,loss_Se)*Ma_a + tf.matmul(loss_Ac,loss_Seinv)*Ma_b + tf.matmul(loss_Acinv,loss_Se)*Ma_c + tf.matmul(loss_Acinv,loss_Seinv)*Ma_d
+    loss = -tf.reduce_mean(loss_Main)
 
   gradients = tape.gradient(loss, model.trainable_variables)
   optimizer.apply_gradients(zip(gradients, model.trainable_variables))
@@ -82,11 +88,14 @@ def train_step(images, labels):
 @tf.function
 def test_step(images, labels):
   predictions = model(images)
-  loss_E2 = tf.reduce_mean((labels-predictions[:,0:10])**2)
+  loss_E2 = (labels-predictions[:,0:10])**2
   # loss_Ac = 1/(1+loss_E2)
-  loss_Ac = 1-loss_E2**2
-  loss_Se = predictions[10]
-  t_loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
+  loss_Ac = 1-loss_E2
+  loss_Se = predictions[:,10]
+  loss_Main = Ma_d + tf.reduce_sum((Ma_b-Ma_d)*loss_Ac,axis=1) + (Ma_c-Ma_d)*loss_Se + (Ma_a-Ma_b-Ma_c+Ma_d)*tf.reduce_sum(loss_Ac,axis=1)*loss_Se
+  # loss_Main = tf.matmul(loss_Ac,loss_Se)*Ma_a + tf.matmul(loss_Ac,loss_Seinv)*Ma_b + tf.matmul(loss_Acinv,loss_Se)*Ma_c + tf.matmul(loss_Acinv,loss_Seinv)*Ma_d
+  t_loss = -tf.reduce_mean(loss_Main)
+  # t_loss = loss_Ac*loss_Se*Ma_a + loss_Ac*(1-loss_Se)*Ma_b + (1-loss_Ac)*loss_Se*Ma_c + (1-loss_Ac)*(1-loss_Se)*Ma_d
   # t_loss = loss_object(labels, predictions)
 
   test_loss(t_loss)
@@ -94,7 +103,7 @@ def test_step(images, labels):
   # test_Nope(tf.argmax(labels, axis=1)!=tf.argmax(predictions[:,0:10], axis=1)&predictions[:,10]>0.5)
   test_Nope(tf.argmax(labels, axis=1), predictions[:,0:10])
 
-EPOCHS = 5
+EPOCHS = 10
 
 for epoch in range(EPOCHS):
   # 在下一个epoch开始时，重置评估指标
