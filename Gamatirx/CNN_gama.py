@@ -45,10 +45,10 @@ class MyModel(Model):
 model = MyModel()
 
 # loss_Matrix
-Ma_a = 1.2
-Ma_b = 0.8
-Ma_c = -1.0
-Ma_d = -0.5
+Ma_a = 0.6
+Ma_b = 0.25
+Ma_c = -2.0
+Ma_d = 0.15
 # loss_object
 # loss_E2 = tf.square(tf.sub(labels, predictions[:,0:9]))
 # loss_Ac = tf.div(1,tf.add(1,loss_E2))
