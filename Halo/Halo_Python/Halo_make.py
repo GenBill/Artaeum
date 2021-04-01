@@ -1,4 +1,5 @@
-import opencv as ocv
+import cv2 as cv
+import numpy as np
 
 def Halo_make(Img, CasterLevel):
     Oracle = regionprops(imbinarize(Img),'centroid').Centroid
