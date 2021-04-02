@@ -2,6 +2,11 @@ import cv2 as cv
 import numpy as np
 
 def Halo_make(Img, CasterLevel):
+    xgrad = cv.Sobel(Img, cv.CV_16SC1, 1, 0)
+    ygrad = cv.Sobel(Img, cv.CV_16SC1, 0, 1)
+    Bedge = cv.Canny(xgrad, ygrad, 50, 150)
+
+
     Oracle = regionprops(imbinarize(Img),'centroid').Centroid
     block = imbinarize(Img)
     Bedge = edge(Img,'canny')
