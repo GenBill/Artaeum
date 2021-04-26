@@ -6,3 +6,4 @@ Gamatrix: Game Theory Incentive Structure Uncertainty
 
 # Portal
 git clone https://GenBill@github.com/GenBill/Artaeum.git  
+git clone git@github.com:GenBill/Artaeum.git
