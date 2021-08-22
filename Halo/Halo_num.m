@@ -20,8 +20,8 @@ All_Ring = zeros(CasterLevel,numTrain);
 for ii = 1:numTrain
     Img = reshape(X(ii,:),28,28);
     % Img = imresize(Img, 10);
-    % this_Halo = Halo_make(Img,CasterLevel);
-    this_Halo = Ring_make(Img,CasterLevel);
+    this_Halo = Halo_make(Img,CasterLevel);
+    % this_Halo = Ring_make(Img,CasterLevel);
     All_Ring(:,ii) = this_Halo(:,1)';
 end
 toc; tic
@@ -30,7 +30,8 @@ accu = 0;
 for ii = 1:numTest
     all_Dist = ones(numTest)*inf;
     this_Img = reshape(X(ii,:),28,28);
-    this_Halo = Ring_make(this_Img,CasterLevel);
+    % this_Halo = Ring_make(this_Img,CasterLevel);
+    this_Halo = Halo_make(this_Img,CasterLevel);
     this_Ring = this_Halo(:,1);
     
     for jj = 1:numTrain
