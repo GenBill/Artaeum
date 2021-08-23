@@ -209,8 +209,8 @@ torch.manual_seed(opt.manualSeed)
 
 cudnn.benchmark = True
 image_size = (224, 224)
-# data_root = '~/Datasets/miniImageNet'
-data_root = '~/Storage/Kaggle265'
+data_root = '~/Datasets/miniImageNet'
+# data_root = '~/Storage/Kaggle265'
 batch_size = opt.batchsize      # 512, 256
 num_workers = opt.numworkers    # 4
 
@@ -304,7 +304,7 @@ class My_loss(nn.Module):
         super().__init__()
         self.flag = 1
     def forward(self, x, y):
-        if self.flag == 1:
+        if self.flag == -1:
             vector = nn.CrossEntropyLoss(reduction='none')(x,y)
             power = torch.softmax(vector.detach(), 0)
             return torch.sum(vector * power)
