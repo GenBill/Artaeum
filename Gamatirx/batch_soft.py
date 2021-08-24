@@ -186,9 +186,11 @@ parser.add_argument('--plainCont', default='', help="path to plain fc_layer (for
 parser.add_argument('--manualSeed', default=2077, type=int, help='manual seed')
 
 parser.add_argument('--pretrain', type=int, default=1, help="pretrain on")
+parser.add_argument('--classnum', type=int, default=265, help="set class num")
 
 # opt = parser.parse_args(args=[])
 opt = parser.parse_args()
+opt.classnum = 100
 # opt.netCont = './models/net_epoch_56.pth'
 
 out_dir = '../Plain_{}/models'.format(opt.batchsize)
@@ -272,7 +274,7 @@ def make_MLP(input_ftrs, hidden_ftrs, output_ftrs, layers=1):
 
 
 model_ft = nn.Sequential(*(list(model_all.children())[:-1]))
-fc_plain = make_MLP(num_ftrs, num_ftrs, output_ftrs=265, layers=1)
+fc_plain = make_MLP(num_ftrs, num_ftrs, output_ftrs=opt.classnum, layers=1)
 
 if torch.cuda.device_count() > 1: 
     print("Let's use", torch.cuda.device_count(), "GPUs!")
